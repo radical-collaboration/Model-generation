@@ -55,8 +55,8 @@ def ParameterizeOE(path):
     
     import subprocess
     with working_directory(path):
-        subprocess.check_output(f'antechamber -i lig.pdb -fi pdb -o lig.mol2 -fo mol2 -pf y -an y -a charged.mol2 -fa mol2 -ao crg',shell=True)
-        subprocess.check_output(f'parmchk2 -i lig.mol2 -f mol2 -o lig.frcmod',shell=True)
+        subprocess.check_output(f'antechamber -i lig.pdb -fi pdb -o lig.mol2 -fo mol2 -pf y -an y -a charged.mol2 -fa mol2 -ao crg',shell=False)
+        subprocess.check_output(f'parmchk2 -i lig.mol2 -f mol2 -o lig.frcmod',shell=False)
         # Wrap tleap to get $path/(com|lig|apo).(inpcrd|prmtop)
         with open(f'leap.in','w+') as leap:
             leap.write("source leaprc.protein.ff14SBonlysc\n")
