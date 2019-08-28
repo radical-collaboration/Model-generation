@@ -47,7 +47,8 @@ def ParameterizeOE(path):
         oechem.OEReadMolecule(ifs,mol)
         ifs.close()
     if not oequacpac.OEAssignCharges(mol,oequacpac.OEAM1BCCCharges()):
-        raise(RuntimeError("OEAssignCharges failed."))
+        print("Error parameteririzng ", path)
+        return
     ofs = oechem.oemolostream()
     if ofs.open(f'{path}/charged.mol2'):
         oechem.OEWriteMolecule(ofs,mol)
