@@ -6,7 +6,7 @@ import numpy as np
 import itertools
 
 def get_data_tuples(path):
-    df = pd.read_csv(args.input_smi, sep=' ', header=False)
+    df = pd.read_csv(args.input_smi, sep=' ', header=None)
     rows = list(df.itertuples(index=False))
     return rows
 
