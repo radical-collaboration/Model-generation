@@ -47,7 +47,7 @@ if rank == 0:
 
     #chunk data for each rank:
     indicies = np.array_split(list(range(len(rows))), mpisize)
-    data = [get_sublist(rows, indicies[i]) for i in mpisize]
+    data = [get_sublist(rows, i) for i in indicies]
 else:
     data = None
 
