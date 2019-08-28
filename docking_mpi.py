@@ -35,7 +35,7 @@ parser.add_argument('--input_smi', type=str, required=True)
 parser.add_argument('--receptor', type=str, required=True)
 parser.add_argument('--output_path', type=str, required=True)
 parser.add_argument('--num_rows', type=int, required=False, default=-1)
-parser.add_argument('--param', type=str, required=True, default=none)
+parser.add_argument('--param', type=str, required=True, default=None)
 args = parser.parse_args()
 
 
