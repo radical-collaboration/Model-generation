@@ -7,7 +7,7 @@ import itertools
 
 def get_data_tuples(path):
     df = pd.read_csv(args.input_smi, sep=' ', header=None)
-    rows = list(df.itertuples(index=False))
+    rows = list(map(lambda x : (x[0], x[1]), (df.itertuples(index=False))))
     return rows
 
 def run_docking(smile, name, struct="input/receptor.oeb"):
