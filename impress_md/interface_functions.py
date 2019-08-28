@@ -54,24 +54,26 @@ def ParameterizeOE(path):
         oechem.OEWriteMolecule(ofs,mol)
     
     import subprocess
-    with working_directory(path):
-        subprocess.check_output(f'antechamber -i lig.pdb -fi pdb -o lig.mol2 -fo mol2 -pf y -an y -a charged.mol2 -fa mol2 -ao crg',shell=False)
-        subprocess.check_output(f'parmchk2 -i lig.mol2 -f mol2 -o lig.frcmod',shell=False)
-        # Wrap tleap to get $path/(com|lig|apo).(inpcrd|prmtop)
-        with open(f'leap.in','w+') as leap:
-            leap.write("source leaprc.protein.ff14SBonlysc\n")
-            leap.write("source leaprc.gaff\n")
-            leap.write("set default PBRadii mbondi3\n")
-            leap.write("rec = loadPDB apo.pdb # May need full filepath?\n")
-            leap.write("saveAmberParm rec apo.prmtop apo.inpcrd\n")
-            leap.write("lig = loadmol2 lig.mol2\n")
-            leap.write("loadAmberParams lig.frcmod\n")
-            leap.write("com = combine {rec lig}\n")
-            leap.write("saveAmberParm lig lig.prmtop lig.inpcrd\n")
-            leap.write("saveAmberParm com com.prmtop com.inpcrd\n")
-            leap.write("quit\n")
-        subprocess.check_output(f'tleap -f leap.in',shell=True)
-
+    try:
+        with working_directory(path):
+            subprocess.check_output(f'antechamber -i lig.pdb -fi pdb -o lig.mol2 -fo mol2 -pf y -an y -a charged.mol2 -fa mol2 -ao crg',shell=True)
+            subprocess.check_output(f'parmchk2 -i lig.mol2 -f mol2 -o lig.frcmod',shell=True)
+            # Wrap tleap to get $path/(com|lig|apo).(inpcrd|prmtop)
+            with open(f'leap.in','w+') as leap:
+                leap.write("source leaprc.protein.ff14SBonlysc\n")
+                leap.write("source leaprc.gaff\n")
+                leap.write("set default PBRadii mbondi3\n")
+                leap.write("rec = loadPDB apo.pdb # May need full filepath?\n")
+                leap.write("saveAmberParm rec apo.prmtop apo.inpcrd\n")
+                leap.write("lig = loadmol2 lig.mol2\n")
+                leap.write("loadAmberParams lig.frcmod\n")
+                leap.write("com = combine {rec lig}\n")
+                leap.write("saveAmberParm lig lig.prmtop lig.inpcrd\n")
+                leap.write("saveAmberParm com com.prmtop com.inpcrd\n")
+                leap.write("quit\n")
+            subprocess.check_output(f'tleap -f leap.in',shell=True)
+    except subprocess.CalledProcessError:
+        print("Antechamber error.")
 
 # DEPRICATED -- this doesn't run on rhea properly for some reason
 # It may be due to a write-permission on Rhea that is now fixed.
