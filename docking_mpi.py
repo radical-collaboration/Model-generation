@@ -56,7 +56,12 @@ data = comm.scatter(data, root=0)
 ## do work on data:
 scores = []
 for work in data:
-    scores.append( (work[0], work[1], run_docking(work[0], args.output_path + work[1], struct=args.receptor) ))
+    try:
+        scores.append( (work[0], work[1], run_docking(work[0], args.output_path + work[1], struct=args.receptor) ))
+    except KeyboardInterrupt:
+        exit()
+    except:
+        print("error.")
 
 ## gather data and send back.
 data = comm.gather(scores, root=0)
