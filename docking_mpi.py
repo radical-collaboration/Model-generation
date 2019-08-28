@@ -30,6 +30,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--input_smi', type=str, required=True)
 parser.add_argument('--receptor', type=str, required=True)
 parser.add_argument('--output_path', type=str, required=True)
+parser.add_argument('--num_rows', type=int, required=False, default=-1)
 args = parser.parse_args()
 
 
@@ -41,6 +42,9 @@ mpisize = comm.Get_size()
 # scatter data out to ranks
 if rank == 0:
     rows = get_data_tuples(args.input_smi)
+    if args.num_rows >= 10:
+        rows = rows[:args.num_rows]
+
     #chunk data for each rank:
     indicies = np.array_split(list(range(len(rows))), mpisize)
     data = [get_sublist(rows, indicies[i]) for i in mpisize]
