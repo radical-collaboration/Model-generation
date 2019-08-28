@@ -10,7 +10,7 @@ def working_directory(directory):
     finally:
         os.chdir(owd)
 
-def RunDocking(smiles, inpath, outpath, padding=4):
+def RunDocking(smiles, inpath, outpath, padding=4, return_scores=False, write_metrics_out=True):
     from . import conf_gen
     from . import dock_conf
     if not os.path.exists(outpath):
@@ -25,12 +25,16 @@ def RunDocking(smiles, inpath, outpath, padding=4):
     dock, lig = dock_conf.DockConf(receptor,confs,MAX_POSES=1)
 
     dock_conf.WriteStructures(receptor, lig, f'{outpath}/apo.pdb', f'{outpath}/lig.pdb')
-    with open(f'{outpath}/metrics.csv','w+') as metrics:
-        metrics.write("Dock,Dock_U\n")
-        metrics.write("{},{}\n".format(dock_conf.BestDockScore(dock,lig),0))
+    best_d_score = dock_conf.BestDockScore(dock,lig)
+    if write_metrics_out:
+        with open(f'{outpath}/metrics.csv','w+') as metrics:
+            metrics.write("Dock,Dock_U\n")
+            metrics.write("{},{}\n".format(best_d_score,0))
     # from openeye import oedepict
     # oedepict.OEPrepareDepiction(lig)
     # oedepict.OERenderMolecule(f'{outpath}/lig.png',lig)
+    if return_scores:
+        return best_d_score
 
 def ParameterizeOE(path):
     """
@@ -92,7 +96,7 @@ def ParameterizeSystem(path):
         subprocess.check_output(f'tleap -f leap.in',shell=True)
     
 
-def RunMinimization(build_path, outpath, one_traj=False):
+def RunMinimization(build_path, outpath, one_traj=False, return_score=False, write_metrics_out=True):
     """
     We are minimizing all three structures, then checking the potential energy using GB forcefields
     We could, alternatively, minimize the docked structure and then extract trajectories (1 frame long), more like a 1-trajectory mmgbsa.
@@ -114,17 +118,19 @@ def RunMinimization(build_path, outpath, one_traj=False):
     if one_traj:
         print("1-traj calculation not ready")
 
-    with open(f'{outpath}/metrics.csv','r') as metrics:
-        dat = metrics.readlines()
-    with open(f'{outpath}/metrics.csv','w') as metrics:
-        metrics.write(dat[0].replace('\n',',Minimize,Minimize_U\n'))
-        if success:
-            metrics.write(dat[1].replace('\n',',{},{}\n'.format(diff_energy,0)))
-        else:
-            metrics.write(dat[1].replace('\n',',NA,NA\n'))
+    if write_metrics_out:
+        with open(f'{outpath}/metrics.csv','r') as metrics:
+            dat = metrics.readlines()
+        with open(f'{outpath}/metrics.csv','w') as metrics:
+            metrics.write(dat[0].replace('\n',',Minimize,Minimize_U\n'))
+            if success:
+                metrics.write(dat[1].replace('\n',',{},{}\n'.format(diff_energy,0)))
+            else:
+                metrics.write(dat[1].replace('\n',',NA,NA\n'))
+    if return_score:
+        return diff_energy
 
-
-def RunMMGBSA(inpath, outpath, niter=1000):
+def RunMMGBSA(inpath, outpath, niter=1000, write_metrics_out=True, return_score=False):
     from . import mmgbsa_new as mmgbsa
     crds = {'lig':f'{inpath}/lig.inpcrd','apo':f'{inpath}/apo.inpcrd','com':f'{inpath}/com.inpcrd'}
     prms = {'lig':f'{inpath}/lig.prmtop','apo':f'{inpath}/apo.prmtop','com':f'{inpath}/com.prmtop'}
@@ -134,9 +140,14 @@ def RunMMGBSA(inpath, outpath, niter=1000):
     mmgbsa.subsample(enthalpies)
     energies = mmgbsa.mmgbsa(enthalpies)
     # Now write this to file
-    with open(f'{outpath}/metrics.csv','r') as metrics:
-        dat = metrics.readlines()
-    with open(f'{outpath}/metrics.csv','w') as metrics:
-        metrics.write(dat[0].replace('\n',',mmgbsa,mmgbsa_U\n'))
-        metrics.write(dat[1].replace('\n',',{},{}\n'.format(energies[0]['diff'],energies[1]['diff'])))
-    return energies
+    if write_metrics_out:
+        with open(f'{outpath}/metrics.csv','r') as metrics:
+            dat = metrics.readlines()
+        with open(f'{outpath}/metrics.csv','w') as metrics:
+            metrics.write(dat[0].replace('\n',',mmgbsa,mmgbsa_U\n'))
+            metrics.write(dat[1].replace('\n',',{},{}\n'.format(energies[0]['diff'],energies[1]['diff'])))
+
+    if return_score:
+        return energies[0]['diff'],energies[1]['diff']
+    else:
+        return energies
