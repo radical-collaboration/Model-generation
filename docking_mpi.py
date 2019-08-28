@@ -10,10 +10,14 @@ def get_data_tuples(path):
     rows = list(map(lambda x : (x[0], x[1]), (df.itertuples(index=False))))
     return rows
 
-def run_docking(smile, name, struct="input/receptor.oeb"):
+def run_docking(smile, name, struct="input/receptor.oeb", param="None"):
     # try:
     d_score = interface_functions.RunDocking(smile, struct, name, return_scores=True, write_metrics_out=True)
-    interface_functions.ParameterizeOE(name)
+    if param == "OE":
+        interface_functions.ParameterizeOE(name)
+    elif param == "AMBER":
+        interface_functions.ParameterizeSystem(name)
+
     return d_score
     # except KeyboardInterrupt:
     #     print("interupt. Exiting")
@@ -31,6 +35,7 @@ parser.add_argument('--input_smi', type=str, required=True)
 parser.add_argument('--receptor', type=str, required=True)
 parser.add_argument('--output_path', type=str, required=True)
 parser.add_argument('--num_rows', type=int, required=False, default=-1)
+parser.add_argument('--param', type=str, required=True, default=none)
 args = parser.parse_args()
 
 
