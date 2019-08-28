@@ -11,17 +11,17 @@ def get_data_tuples(path):
     return rows
 
 def run_docking(smile, name, struct="input/receptor.oeb"):
-    try:
-        d_score = interface_functions.RunDocking(smile, struct, name, return_scores=True, write_metrics_out=True)
-        interface_functions.ParameterizeOE(name)
-        return d_score
-    except KeyboardInterrupt:
-        print("interupt. Exiting")
-        exit()
-        return float('NaN')
-    except:
-        print("Unknown error. Returning NAN")
-        return float('NaN')
+    # try:
+    d_score = interface_functions.RunDocking(smile, struct, name, return_scores=True, write_metrics_out=True)
+    interface_functions.ParameterizeOE(name)
+    return d_score
+    # except KeyboardInterrupt:
+    #     print("interupt. Exiting")
+    #     exit()
+    #     return float('NaN')
+    # except:
+    #     print("Unknown error. Returning NAN")
+    #     return float('NaN')
 
 def get_sublist(l, i):
     return [l[ind] for ind in i]
