@@ -62,7 +62,7 @@ data = comm.scatter(data, root=0)
 scores = []
 for work in data:
     try:
-        scores.append( (work[0], work[1], run_docking(work[0], args.output_path + work[1], struct=args.receptor) ))
+        scores.append( (work[0], work[1], run_docking(work[0], args.output_path + work[1], struct=args.receptor, param=args.param) ))
     except KeyboardInterrupt:
         exit()
     except:
