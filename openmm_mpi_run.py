@@ -11,7 +11,7 @@ import os
 import sys
 import numpy as np
 from mpi4py import MPI
-from Queue import Queue
+from queue import Queue
 
 WORKTAG = 1
 DIETAG = 0
