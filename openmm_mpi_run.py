@@ -18,9 +18,8 @@ DIETAG = 0
 
 
 class Work(object):
-    def __init__(self, prog, files):
+    def __init__(self):
         # importat: sort by file size in decreasing order!
-        files.sort(key=lambda f: os.stat(f).st_size, reverse=True)
         q = Queue()
         with open('file_list.txt', 'r') as f:
             paths_to_run_mmgbsa = map(lambda x: x.strip(), f.readlines())
@@ -47,10 +46,10 @@ def master(comm):
     status = MPI.Status()
 
     # generate work queue
-    wq = Work(sys.argv[1], sys.argv[2:])
+    wq = Work()
 
     # Seed the slaves, send one unit of work to each slave (rank)
-    for rank in xrange(1, num_procs):
+    for rank in range(1, num_procs):
         work = wq.get_next()
         comm.send(work, dest=rank, tag=WORKTAG)
 
@@ -67,12 +66,12 @@ def master(comm):
         comm.send(work, dest=status.Get_source(), tag=WORKTAG)
 
     # No more work to be done, receive all outstanding results from slaves
-    for rank in xrange(1, num_procs):
+    for rank in range(1, num_procs):
         result = comm.recv(source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=status)
         # process_result(result)
 
     # Tell all the slaves to exit by sending an empty message with DIETAG
-    for rank in xrange(1, num_procs):
+    for rank in range(1, num_procs):
         comm.send(0, dest=rank, tag=DIETAG)
 
 
