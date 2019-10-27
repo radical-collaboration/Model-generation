@@ -13,7 +13,7 @@ def run_mmgbsa(path):
 
 def main(args):
     #file listing of paths to run this on, pass as argument. One line per path.
-    with open('file_list.txt', 'r') as f:
+    with open('/gpfs/alpine/chm155/world-shared/files.txt', 'r') as f:
         paths_to_run_mmgbsa = map(lambda x : x.strip(), f.readlines())
 
     result = charm.pool.map(run_mmgbsa, paths_to_run_mmgbsa, chunksize=6)
