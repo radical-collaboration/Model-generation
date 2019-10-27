@@ -34,8 +34,9 @@ class Work(object):
 
 
 def do_work(work):
-
+    print("running", work)
     interface_functions.RunMinimization(work, work, True)
+    print("done with ", work)
 
 # def process_result(result):
 #     pass
