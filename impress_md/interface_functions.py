@@ -18,11 +18,13 @@ def RunDocking(smiles, inpath, outpath, padding=4):
     confs = conf_gen.SelectEnantiomer(conf_gen.FromString(smiles))
     # This receptor can be pre-compiled to an oeb. It speeds things up
     filename, file_extension = os.path.splitext(inpath)
-    if file_extension == ".oeb":
-        receptor = dock_conf.PrepareReceptorFromBinary(inpath)
-    else: # else it is a pdb
-        receptor = dock_conf.PrepareReceptor(inpath,padding,outpath)
-    dock, lig = dock_conf.DockConf(receptor,confs,MAX_POSES=1)
+    #if file_extension == ".oeb":
+    #    receptor = dock_conf.PrepareReceptorFromBinary(inpath)
+    #else: # else it is a pdb
+    #    receptor = dock_conf.PrepareReceptor(inpath,padding,outpath)
+    
+    dock, lig, receptor = dock_conf.DockConf("input/receptor.oeb",confs,MAX_POSES=1)
+    
     # Currently we generate 200 conformers for each ligand, but only take
     #   the best pose, as scored by Openeye. It may be useful to consider
     #   something about the range of poses.
