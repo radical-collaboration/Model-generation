@@ -60,6 +60,9 @@ def RunDocking_(smiles, inpath, outpath, padding=4):
     #   the best pose, as scored by Openeye. It may be useful to consider
     #   something about the range of poses.
 
+    with open(f'{outpath}/metrics.csv','w+') as metrics:
+        metrics.write("Dock,Dock_U\n")
+        metrics.write("{},{}\n".format(dock_conf.BestDockScore(dock,lig),0))
     dock_conf.WriteStructures(receptor, lig, f'{outpath}/apo.pdb', f'{outpath}/lig.pdb')
     # # If you uncomment the three lines below, it will save an image of the 2D
     #   molecule. This is useful as a sanity check.
@@ -179,6 +182,14 @@ def RunMinimization_(build_path, outpath, one_traj=False):
     # TODO: We could decide to do 1-trajectory mmgbsa. It would run about twice as fast as the
     #       current method. I think it would be less accurate, but maybe not. Look into the 1-traj
     #       method from Coveney papers if you want to implement this.
+    with open(f'{outpath}/metrics.csv','r') as metrics:
+        dat = metrics.readlines()
+    with open(f'{outpath}/metrics.csv','w') as metrics:
+        metrics.write(dat[0].replace('\n',',Minimize,Minimize_U\n'))
+        if success:
+            metrics.write(dat[1].replace('\n',',{},{}\n'.format(diff_energy,0)))
+        else:
+            metrics.write(dat[1].replace('\n',',NA,NA\n'))
     if success:
         return diff_energy
     else:
@@ -207,6 +218,30 @@ def RunMMGBSA(inpath, outpath, niter=1000):
         metrics.write(dat[0].replace('\n',',mmgbsa,mmgbsa_U\n'))
         metrics.write(dat[1].replace('\n',',{},{}\n'.format(energies[0]['diff'],energies[1]['diff'])))
     return energies
+
+
+def RunMMGBSA_(inpath, outpath, niter=1000):
+    """
+    1 'iteration' corresponds to 1 ps.
+    """
+    from . import mmgbsa
+    crds = {'lig':f'{inpath}/lig.inpcrd','apo':f'{inpath}/apo.inpcrd','com':f'{inpath}/com.inpcrd'}
+    prms = {'lig':f'{inpath}/lig.prmtop','apo':f'{inpath}/apo.prmtop','com':f'{inpath}/com.prmtop'}
+
+    enthalpies = mmgbsa.simulate(crds, prms, niter)
+    # enthalpies is a list of energies from each iteration
+    mmgbsa.subsample(enthalpies)
+    # We subsample the enthalpies using a method from John Chodera that determines the equilibration
+    #   and autocorrelation times. This allows us to extract an uncertainty.
+    #   See the file mmgbsa.py or his package 'pymbar' for more detail.
+    energies = mmgbsa.mmgbsa(enthalpies)
+
+    with open(f'{outpath}/metrics.csv','r') as metrics:
+        dat = metrics.readlines()
+    with open(f'{outpath}/metrics.csv','w') as metrics:
+        metrics.write(dat[0].replace('\n',',mmgbsa,mmgbsa_U\n'))
+        metrics.write(dat[1].replace('\n',',{},{}\n'.format(energies[0]['diff'],energies[1]['diff'])))
+    return energies[0]['diff']
 
 def RunAlchemy(path, niter=2500, nsteps_per_iter=1000, nlambda=11):
     """
